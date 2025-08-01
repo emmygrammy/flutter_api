@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_api/model/user.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_api/services/user_api.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,6 +12,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<User> users = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fectchUsers();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,21 +26,18 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.blue,
         centerTitle: true,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: fectchUsers,
-        child: Icon(Icons.person_add_alt_1),
-        backgroundColor: Colors.blue,
-      ),
+     
       body: ListView.builder(
         itemCount: users.length,
         itemBuilder: (context, index) {
           final user = users[index];
           final email = user.email;
+          final fullName = user.name.fullName;
           // final color = user.gender =='male'? Colors.blue:Colors.green;
           return ListTile(
             leading: Icon(Icons.person),
             trailing: Icon(Icons.arrow_forward),
-              title: Text('${user.name.title} ${user.name.first} ${user.name.last}'),
+              title: Text(fullName),
               subtitle: Text(email),
               // tileColor: (color),
           );
@@ -43,31 +45,11 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-  void fectchUsers() async{
-    print('fetchUsers');
-    const uri = 'https://randomuser.me/api/?results=100';
-    final response = await http.get(Uri.parse(uri));
-    print(response.body);
-    final json = jsonDecode(response.body);
-    print(json);
-    final results = json['results'] as List<dynamic>;
-    final transformed = results .map((e){
-      return User(
-        gender: e['gender'],
-        email: e['email'],
-        phone: e['phone'],
-        cell: e['cell'],
-        nat: e['nat'],
-        name: UserName(
-          title: e['name']['title'],
-          first: e['name']['first'],
-          last: e['name']['last'],
-        ),
-      );
-    }).toList();
+  Future<void> fectchUsers() async{
+    final response = await UserApi.fectchUsers();
     setState(() {
-      users = transformed;
+      users = response;
     });
-    print("fetch users completed");
   }
+  
 }
