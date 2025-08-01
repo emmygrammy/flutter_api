@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_api/model/user.dart';
 import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
@@ -11,33 +12,32 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<dynamic> users = [];
+  List<User> users = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Flutter api'),
+        backgroundColor: Colors.blue,
+        centerTitle: true,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: fectchUsers,
-        child: const Icon(Icons.add),
+        child: Icon(Icons.person_add_alt_1),
+        backgroundColor: Colors.blue,
       ),
       body: ListView.builder(
         itemCount: users.length,
         itemBuilder: (context, index) {
           final user = users[index];
-          final email = user['email'];
-          final name = user['name']['first'];
-          final imageUrl = user['picture']['thumbnail'];
+          final email = user.email;
+          // final color = user.gender =='male'? Colors.blue:Colors.green;
           return ListTile(
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(30),
-              child: CircleAvatar(
-                child: Image.network(imageUrl),
-                ),
-            ),
-              title: Text(name),
-            subtitle: Text(email),
+            leading: Icon(Icons.person),
+            trailing: Icon(Icons.arrow_forward),
+              title: Text('${user.name.title} ${user.name.first} ${user.name.last}'),
+              subtitle: Text(email),
+              // tileColor: (color),
           );
         },
       ),
@@ -50,8 +50,23 @@ class _HomePageState extends State<HomePage> {
     print(response.body);
     final json = jsonDecode(response.body);
     print(json);
+    final results = json['results'] as List<dynamic>;
+    final transformed = results .map((e){
+      return User(
+        gender: e['gender'],
+        email: e['email'],
+        phone: e['phone'],
+        cell: e['cell'],
+        nat: e['nat'],
+        name: UserName(
+          title: e['name']['title'],
+          first: e['name']['first'],
+          last: e['name']['last'],
+        ),
+      );
+    }).toList();
     setState(() {
-      users = json['results'];
+      users = transformed;
     });
     print("fetch users completed");
   }
