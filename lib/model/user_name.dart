@@ -13,4 +13,12 @@ class FullName {
   String get fullName {
     return '$title $first $last';
   }
+
+  factory FullName.fromJson(Map<String, dynamic> json) {
+    return FullName(
+      title: json['title'] ?? '',
+      first: json['first'] ?? '',
+      last: json['last'] ?? '',
+    );
+  }
 }
